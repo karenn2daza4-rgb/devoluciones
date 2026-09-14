@@ -1,0 +1,1120 @@
+<title>Control de Devoluciones</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    color-scheme: light;
+    --bg: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #faf8f3;
+    --border: #e3dccb;
+    --border-strong: #cfc5ac;
+    --text: #23201a;
+    --text-dim: #6c6353;
+    --text-faint: #948a76;
+    --accent: #c85a1e;
+    --accent-ink: #fffaf3;
+    --accent-soft: #f6e3d3;
+
+    --ok: #2f7d54;
+    --ok-bg: #e2f1e6;
+    --warn: #a8710f;
+    --warn-bg: #faf0da;
+    --info: #2d6a9e;
+    --info-bg: #e4eef7;
+    --danger: #b23a2a;
+    --danger-bg: #fbe8e3;
+
+    --shadow: 0 1px 2px rgba(35,32,26,0.06), 0 6px 20px -8px rgba(35,32,26,0.15);
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    padding: 0 16px 64px;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  h1, h2, h3, .display {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+
+  /* ---------- Header ---------- */
+  header.top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px 0 20px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  header.top .titles h1 {
+    font-size: 34px;
+    line-height: 1;
+    margin: 0 0 4px;
+    color: var(--text);
+  }
+  header.top .titles h1 span { color: var(--accent); }
+  header.top .titles p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 16px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn:disabled:hover { background: var(--surface); }
+  .btn-accent {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .btn-accent:hover { filter: brightness(1.06); }
+  .btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    padding: 6px 8px;
+  }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger-ghost { color: var(--danger); }
+
+  /* ---------- Stat tiles ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat[data-tone="warn"] { border-left-color: var(--warn); }
+  .stat[data-tone="info"] { border-left-color: var(--info); }
+  .stat[data-tone="ok"] { border-left-color: var(--ok); }
+  .stat[data-tone="incidencia"] { border-left-color: #d9730d; }
+  .stat .num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .stat .label {
+    color: var(--text-dim);
+    font-size: 12.5px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- Filter bar ---------- */
+  .filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .filters input[type="text"],
+  .filters select {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .filters input[type="text"] { flex: 1 1 220px; min-width: 160px; }
+  .filters select { min-width: 150px; }
+  .filters .count {
+    margin-left: auto;
+    color: var(--text-faint);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Pasillo map ---------- */
+  .map-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .map-toolbar .meta {
+    color: var(--text-dim);
+    font-size: 13.5px;
+  }
+  .pasillo-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .shelf-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px 13px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+  .shelf-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+  }
+  .shelf-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .shelf-card.is-empty { border-style: dashed; }
+  .status-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .status-icon:hover { background: var(--surface-2); }
+  .status-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .status-icon .rack-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-faint);
+    opacity: 0.55;
+  }
+  .status-icon .rack-icon--filled {
+    opacity: 1;
+    filter: drop-shadow(0 1px 1px rgba(20,17,12,0.18));
+  }
+  .shelf-card .num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+  }
+  .shelf-card .num small {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .shelf-card .meta {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .shelf-card .meta.vacio { color: var(--text-faint); font-style: italic; }
+  .shelf-card .match-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+  .shelf-card .dots { display: flex; gap: 5px; margin-top: 9px; }
+  .shelf-card .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .shelf-card .dot[data-estado="pendiente"] { background: var(--warn); }
+  .shelf-card .dot[data-estado="validacion"] { background: var(--info); }
+  .shelf-card .dot[data-estado="incidencia"] { background: #d9730d; }
+
+  .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .detail-head .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    padding: 4px 0;
+  }
+  .detail-head .back:hover { color: var(--accent); }
+  .detail-head h2 {
+    font-size: 26px;
+    margin: 0;
+  }
+  .detail-head .badge-tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 1px 11px;
+    border-radius: 999px;
+  }
+  .detail-head .meta {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .detail-head .spacer { flex: 1; }
+  .pasillo-estado-select {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* ---------- Detail table wrapper ---------- */
+  .pasillo-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.items th {
+    text-align: left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
+    font-weight: 600;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.items td {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14.5px;
+    vertical-align: top;
+  }
+  table.items tr:last-child td { border-bottom: none; }
+  table.items td.cantidad { font-variant-numeric: tabular-nums; font-weight: 600; }
+  table.items td.notas { color: var(--text-dim); font-size: 13.5px; max-width: 260px; }
+  table.items td.acciones { text-align: right; white-space: nowrap; }
+  table.items .nombre-cell .modelo { font-weight: 600; }
+  table.items .nombre-cell .fecha { color: var(--text-faint); font-size: 12.5px; margin-top: 2px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip[data-estado="pendiente"] { background: var(--warn-bg); color: var(--warn); }
+  .chip[data-estado="validacion"] { background: var(--info-bg); color: var(--info); }
+  .chip[data-estado="incidencia"] { background: #fbe6d2; color: #d9730d; }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+  .empty h3 { margin: 0 0 6px; font-size: 22px; }
+  .empty p { margin: 0 0 18px; font-size: 14px; }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(20,17,12,0.45);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    width: 100%; max-width: 480px;
+    padding: 24px;
+  }
+  .modal h2 { margin: 0 0 18px; font-size: 24px; }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14.5px;
+    padding: 9px 11px;
+    border-radius: 7px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+  .modal-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 20px; gap: 10px;
+  }
+  .modal-actions .right { display: flex; gap: 8px; margin-left: auto; }
+
+  .confirm-box p { font-size: 14.5px; color: var(--text-dim); margin: 0 0 20px; }
+
+  [hidden] { display: none !important; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    table.items thead { display: none; }
+    table.items, table.items tbody, table.items tr, table.items td { display: block; width: 100%; }
+    table.items tr { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    table.items tr:last-child { border-bottom: none; }
+    table.items td { padding: 3px 0; border-bottom: none; }
+    table.items td.acciones { text-align: left; margin-top: 6px; }
+    table.items td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-faint);
+      font-weight: 600;
+    }
+  }
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    header.top { flex-direction: column; align-items: stretch; }
+    .field-row { flex-direction: column; gap: 0; }
+  }
+
+  /* ---------- Splash screen ---------- */
+  .splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg);
+  }
+  .splash-greeting {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+  .splash-title {
+    font-size: 44px;
+    margin: 0 0 26px;
+    max-width: 18ch;
+  }
+  .splash .btn-accent {
+    padding: 12px 34px;
+    font-size: 15px;
+  }
+  @media (max-width: 480px) {
+    .splash-title { font-size: 34px; }
+  }
+</style>
+
+<div class="splash" id="splash">
+  <p class="splash-greeting" id="splash-greeting">Buenos días</p>
+  <h1 class="splash-title">Departamento de <span style="color:var(--accent)">Devoluciones</span></h1>
+  <button type="button" class="btn btn-accent" id="btn-entrar">Entrar</button>
+</div>
+
+<div class="wrap" id="app-wrap" hidden>
+  <header class="top">
+    <div class="titles">
+      <h1>Control de <span>Devoluciones</span></h1>
+      <p>Inventario de electrodomésticos por pasillo · zona de devoluciones</p>
+    </div>
+    <button class="btn btn-accent" id="btn-nuevo">+ Nuevo artículo</button>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters">
+    <input type="text" id="f-buscar" placeholder="Buscar por transportista, operario o nota…" />
+    <select id="f-estado">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">Pendiente de revisión</option>
+      <option value="validacion">Pendiente de validación</option>
+      <option value="incidencia">Incidencia</option>
+    </select>
+    <select id="f-orden">
+      <option value="">Todos</option>
+      <option value="asc">Más antiguo primero</option>
+      <option value="desc">Más reciente primero</option>
+    </select>
+    <span class="count" id="f-count"></span>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal" id="modal-form">
+    <h2 id="form-title">Nuevo artículo</h2>
+    <form id="item-form">
+      <div class="field">
+        <label for="in-transportista">Transportista</label>
+        <input type="text" id="in-transportista" required placeholder="Selecciona o escribe" list="lista-transportistas" />
+        <datalist id="lista-transportistas">
+          <option value="Dachser"></option>
+          <option value="Transaher"></option>
+          <option value="Amazon"></option>
+          <option value="Corte Inglés"></option>
+          <option value="TDN"></option>
+        </datalist>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="in-cantidad">Cantidad</label>
+          <input type="number" id="in-cantidad" min="0" step="1" required value="1" />
+        </div>
+        <div class="field">
+          <label for="in-pasillo">Pasillo</label>
+          <select id="in-pasillo" required></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="in-estado">Estado</label>
+          <select id="in-estado">
+            <option value="pendiente">Pendiente de revisión</option>
+            <option value="validacion">Pendiente de validación</option>
+            <option value="incidencia">Incidencia</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="in-fecha">Fecha de entrada</label>
+          <input type="date" id="in-fecha" required />
+        </div>
+      </div>
+      <div class="field">
+        <label for="in-operario">Operario</label>
+        <input type="text" id="in-operario" placeholder="¿Quién lo ha gestionado?" />
+      </div>
+      <div class="field">
+        <label for="in-notas">Notas</label>
+        <textarea id="in-notas" placeholder="Observaciones, motivo de devolución, nº de serie…"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-cancelar">Cancelar</button>
+        <div class="right">
+          <button type="submit" class="btn btn-accent">Guardar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="overlay" id="overlay-confirm" hidden>
+  <div class="modal confirm-box" style="max-width:380px">
+    <h2>Eliminar artículo</h2>
+    <p id="confirm-text">¿Seguro que quieres eliminarlo del listado? Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="btn-confirm-cancel">Cancelar</button>
+      <div class="right">
+        <button type="button" class="btn btn-accent" style="background:var(--danger);border-color:var(--danger)" id="btn-confirm-ok">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ESTADOS = {
+    pendiente: "Pendiente de revisión",
+    validacion: "Pendiente de validación",
+    incidencia: "Incidencia",
+  };
+
+  const DEFAULT_PASILLOS = Array.from({ length: 25 }, (_, i) => String(i + 1));
+
+  let PASILLOS = DEFAULT_PASILLOS.slice();
+  let items = [];
+  let pasilloEstados = {};
+  let editingId = null;
+  let pendingDeleteId = null;
+  let pendingDeleteType = "item";
+  let selectedPasillo = null;
+  let db = null;
+
+  const $ = (sel) => document.querySelector(sel);
+  const contentEl = $("#content");
+  const statsEl = $("#stats");
+
+  function fmtFecha(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function todayISO() {
+    const d = new Date();
+    return d.toISOString().slice(0, 10);
+  }
+
+  const RACK_ICON_EMPTY = `<svg class="rack-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="2" width="20" height="20" rx="3"/><line x1="2" y1="9.3" x2="22" y2="9.3"/><line x1="2" y1="16.6" x2="22" y2="16.6"/></svg>`;
+
+  const PASILLO_ESTADOS = {
+    revisado: { label: "Revisado", color: "var(--ok)" },
+    incidencia: { label: "Incidencia", color: "#d9730d" },
+    urgente: { label: "Urgente", color: "var(--danger)" },
+  };
+  const PASILLO_ESTADO_CYCLE = [null, "revisado", "incidencia", "urgente"];
+
+  function pasilloIconHtml(p, estado) {
+    if (!estado) {
+      return `<span class="status-icon" data-status-toggle="${p}" title="Sin estado del pasillo · clic para asignar" role="button" tabindex="0">${RACK_ICON_EMPTY}</span>`;
+    }
+    const info = PASILLO_ESTADOS[estado];
+    return `<span class="status-icon" data-status-toggle="${p}" title="${info.label} · clic para cambiar" role="button" tabindex="0">
+      <svg class="rack-icon rack-icon--filled" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="6" style="fill:${info.color}"/></svg>
+    </span>`;
+  }
+
+  async function cyclePasilloEstado(p) {
+    if (!db) return;
+    const current = pasilloEstados[p] || null;
+    const idx = PASILLO_ESTADO_CYCLE.indexOf(current);
+    const next = PASILLO_ESTADO_CYCLE[(idx + 1) % PASILLO_ESTADO_CYCLE.length];
+    try {
+      await db.doc("pasillo_estados/" + p).set({ estado: next, updated_at: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function setPasilloEstado(p, estado) {
+    if (!db) return;
+    try {
+      await db.doc("pasillo_estados/" + p).set({ estado: estado || null, updated_at: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function addPasillo() {
+    if (!db) return;
+    const nums = PASILLOS.map((p) => parseInt(p, 10)).filter((n) => !isNaN(n));
+    const next = String(nums.length ? Math.max(...nums) + 1 : PASILLOS.length + 1);
+    const newList = [...PASILLOS, next];
+    try {
+      await db.doc("config/pasillos").set({ list: newList, updated_at: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function removePasillo(p) {
+    if (!db) return;
+    if (rowsFor(p).length > 0) return;
+    const newList = PASILLOS.filter((x) => x !== p);
+    try {
+      await db.doc("config/pasillos").set({ list: newList, updated_at: new Date().toISOString() });
+      await db.doc("pasillo_estados/" + p).delete();
+    } catch (err) {
+      console.error(err);
+    }
+    if (selectedPasillo === p) selectedPasillo = null;
+    render();
+  }
+
+  function populatePasilloSelects() {
+    $("#in-pasillo").innerHTML =
+      '<option value="" disabled>Selecciona un pasillo</option>' +
+      PASILLOS.map((p) => `<option value="${p}">Pasillo ${p}</option>`).join("");
+  }
+
+  function rowsFor(pasillo) {
+    return items.filter((i) => i.pasillo === pasillo);
+  }
+
+  function matchesFilters(it, buscar, fEstado) {
+    if (fEstado && it.estado !== fEstado) return false;
+    if (buscar) {
+      const hay = ((it.transportista || "") + " " + (it.operario || "") + " " + (it.notas || "")).toLowerCase();
+      if (!hay.includes(buscar)) return false;
+    }
+    return true;
+  }
+
+  function itemsTableHtml(rows) {
+    return `
+      <table class="items">
+        <thead><tr><th>Transportista</th><th>Cantidad</th><th>Estado</th><th>Operario</th><th>Notas</th><th></th></tr></thead>
+        <tbody>${rows
+          .map(
+            (it) => `
+          <tr>
+            <td data-label="Transportista" class="nombre-cell">
+              <div class="modelo">${escapeHtml(it.transportista || "—")}</div>
+              <div class="fecha">Entrada: ${fmtFecha(it.fecha_entrada)}</div>
+            </td>
+            <td data-label="Cantidad" class="cantidad">${escapeHtml(String(it.cantidad))}</td>
+            <td data-label="Estado"><span class="chip" data-estado="${it.estado}">${ESTADOS[it.estado] || it.estado}</span></td>
+            <td data-label="Operario">${escapeHtml(it.operario || "—")}</td>
+            <td data-label="Notas" class="notas">${escapeHtml(it.notas || "—")}</td>
+            <td data-label="" class="acciones">
+              <button class="btn btn-ghost" data-action="edit" data-id="${it.id}" title="Editar">✎</button>
+              <button class="btn btn-ghost btn-danger-ghost" data-action="delete" data-id="${it.id}" title="Eliminar">🗑</button>
+            </td>
+          </tr>`
+          )
+          .join("")}</tbody>
+      </table>`;
+  }
+
+  function renderMap(buscar, fEstado, fOrden) {
+    const filtering = Boolean(buscar || fEstado);
+
+    let entries = PASILLOS.map((p) => {
+      const rows = rowsFor(p);
+      const isEmpty = rows.length === 0;
+      const matchCount = rows.filter((it) => matchesFilters(it, buscar, fEstado)).length;
+      const fechas = rows.map((i) => i.fecha_entrada).filter(Boolean).sort();
+      return { p, rows, isEmpty, matchCount, oldestFecha: fechas[0] || null };
+    }).filter((e) => !filtering || e.matchCount > 0);
+
+    if (fOrden === "asc" || fOrden === "desc") {
+      entries.sort((a, b) => {
+        if (!a.oldestFecha && !b.oldestFecha) return Number(a.p) - Number(b.p);
+        if (!a.oldestFecha) return 1;
+        if (!b.oldestFecha) return -1;
+        const cmp = a.oldestFecha.localeCompare(b.oldestFecha);
+        return fOrden === "desc" ? -cmp : cmp;
+      });
+    }
+
+    const cardsHtml = entries
+      .map(({ p, rows, isEmpty, matchCount }) => {
+        const unidades = rows.reduce((s, i) => s + (Number(i.cantidad) || 0), 0);
+        const estadosPresentes = [...new Set(rows.map((i) => i.estado))];
+        return `
+      <div class="shelf-card ${isEmpty ? "is-empty" : ""}" data-pasillo="${p}" role="button" tabindex="0">
+        ${pasilloIconHtml(p, pasilloEstados[p])}
+        ${filtering && matchCount > 0 ? `<span class="match-badge">${matchCount}</span>` : ""}
+        <div class="num"><small>Pasillo</small>${p}</div>
+        ${
+          isEmpty
+            ? `<div class="meta vacio">Vacío</div>`
+            : `<div class="meta">${rows.length} artículo${rows.length === 1 ? "" : "s"} · ${unidades} uds.</div>
+               <div class="dots">${estadosPresentes.map((e) => `<span class="dot" data-estado="${e}"></span>`).join("")}</div>`
+        }
+      </div>`;
+      })
+      .join("");
+
+    const toolbar = `
+      <div class="map-toolbar">
+        <span class="meta">${PASILLOS.length} pasillo${PASILLOS.length === 1 ? "" : "s"}</span>
+        <button type="button" class="btn" id="btn-add-pasillo">+ Añadir pasillo</button>
+      </div>`;
+
+    contentEl.innerHTML =
+      toolbar +
+      (cardsHtml
+        ? `<div class="pasillo-map">${cardsHtml}</div>`
+        : `<div class="empty"><h3>Sin resultados</h3><p>Prueba a cambiar los filtros o la búsqueda.</p></div>`);
+  }
+
+  function renderDetail(pasillo, buscar, fEstado, fOrden) {
+    const allRows = rowsFor(pasillo);
+    const rows = allRows
+      .filter((it) => matchesFilters(it, buscar, fEstado))
+      .sort((a, b) => {
+        const da = a.fecha_entrada || "";
+        const db = b.fecha_entrada || "";
+        return fOrden === "desc" ? db.localeCompare(da) : da.localeCompare(db);
+      });
+    const unidades = allRows.reduce((s, i) => s + (Number(i.cantidad) || 0), 0);
+    const estadoPasillo = pasilloEstados[pasillo] || "";
+
+    let body;
+    if (allRows.length === 0) {
+      body = `
+        <div class="empty">
+          <h3>Este pasillo está vacío</h3>
+          <p>Añade el primer artículo devuelto a este pasillo.</p>
+          <button class="btn btn-accent" id="btn-add-here">+ Nuevo artículo</button>
+        </div>`;
+    } else if (rows.length === 0) {
+      body = `<div class="empty"><h3>Sin resultados</h3><p>Prueba a cambiar los filtros o la búsqueda.</p></div>`;
+    } else {
+      body = `<div class="pasillo-group">${itemsTableHtml(rows)}</div>`;
+    }
+
+    contentEl.innerHTML = `
+      <div class="detail-head">
+        <button type="button" class="back" id="btn-back">← Todos los pasillos</button>
+        <h2>Pasillo <span class="badge-tag">${pasillo}</span></h2>
+        <span class="meta">${allRows.length} artículo${allRows.length === 1 ? "" : "s"} · ${unidades} uds.</span>
+        <span class="spacer"></span>
+        <select class="pasillo-estado-select" id="sel-pasillo-estado">
+          <option value="" ${estadoPasillo === "" ? "selected" : ""}>Sin estado</option>
+          <option value="revisado" ${estadoPasillo === "revisado" ? "selected" : ""}>✓ Revisado</option>
+          <option value="incidencia" ${estadoPasillo === "incidencia" ? "selected" : ""}>⚠ Incidencia</option>
+          <option value="urgente" ${estadoPasillo === "urgente" ? "selected" : ""}>■ Urgente</option>
+        </select>
+        <button class="btn btn-accent" id="btn-add-here-top">+ Añadir aquí</button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-danger-ghost"
+          id="btn-delete-pasillo"
+          ${allRows.length > 0 ? "disabled" : ""}
+          title="${allRows.length > 0 ? "Vacía el pasillo antes de eliminarlo" : "Eliminar pasillo"}"
+        >🗑 Eliminar pasillo</button>
+      </div>
+      ${body}`;
+  }
+
+  function render() {
+    const buscar = $("#f-buscar").value.trim().toLowerCase();
+    const fEstado = $("#f-estado").value;
+    const fOrden = $("#f-orden").value;
+
+    // stats (over all items, not filtered)
+    const totalUnidades = items.reduce((s, i) => s + (Number(i.cantidad) || 0), 0);
+    const countBy = (estado) => items.filter((i) => i.estado === estado).length;
+    const unidadesPorEstado = (estado) =>
+      items.filter((i) => i.estado === estado).reduce((s, i) => s + (Number(i.cantidad) || 0), 0);
+    const pasillosParaValidar = PASILLOS.filter((p) => pasilloEstados[p] === "revisado").length;
+    statsEl.innerHTML = `
+      <div class="stat"><div class="num">${totalUnidades}</div><div class="label">Unidades totales</div></div>
+      <div class="stat" data-tone="warn"><div class="num">${countBy("pendiente")}</div><div class="label">Pendientes de revisión</div></div>
+      <div class="stat" data-tone="incidencia"><div class="num">${unidadesPorEstado("incidencia")}</div><div class="label">Unidades con incidencia</div></div>
+      <div class="stat" data-tone="ok"><div class="num">${pasillosParaValidar}</div><div class="label">Para validar</div></div>
+    `;
+
+    const totalMatches = items.filter((i) => matchesFilters(i, buscar, fEstado)).length;
+    $("#f-count").textContent = `${totalMatches} artículo${totalMatches === 1 ? "" : "s"}`;
+
+    if (selectedPasillo) {
+      renderDetail(selectedPasillo, buscar, fEstado, fOrden);
+    } else {
+      renderMap(buscar, fEstado, fOrden);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  // ---------- Form modal ----------
+  function openForm(item, defaultPasillo) {
+    editingId = item ? item.id : null;
+    $("#form-title").textContent = item ? "Editar artículo" : "Nuevo artículo";
+    $("#in-transportista").value = item ? item.transportista || "" : "";
+    $("#in-cantidad").value = item ? item.cantidad : 1;
+    $("#in-pasillo").value = item ? item.pasillo : defaultPasillo || "";
+    $("#in-estado").value = item ? item.estado : "pendiente";
+    $("#in-fecha").value = item ? item.fecha_entrada : todayISO();
+    $("#in-operario").value = item ? item.operario || "" : "";
+    $("#in-notas").value = item ? item.notas || "" : "";
+    $("#overlay").hidden = false;
+    setTimeout(() => $("#in-transportista").focus(), 0);
+  }
+
+  function closeForm() {
+    $("#overlay").hidden = true;
+    editingId = null;
+  }
+
+  $("#btn-nuevo").addEventListener("click", () => openForm(null, selectedPasillo));
+  $("#btn-cancelar").addEventListener("click", closeForm);
+  $("#overlay").addEventListener("click", (e) => {
+    if (e.target.id === "overlay") closeForm();
+  });
+
+  $("#item-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+      cantidad: Number($("#in-cantidad").value) || 0,
+      pasillo: $("#in-pasillo").value,
+      estado: $("#in-estado").value,
+      fecha_entrada: $("#in-fecha").value,
+      transportista: $("#in-transportista").value.trim(),
+      operario: $("#in-operario").value.trim(),
+      notas: $("#in-notas").value.trim(),
+      updated_at: new Date().toISOString(),
+    };
+    if (!data.transportista || !data.pasillo) return;
+
+    if (!db) { closeForm(); return; }
+
+    try {
+      if (editingId) {
+        await db.doc("items/" + editingId).update(data);
+      } else {
+        data.created_at = data.updated_at;
+        await db.collection("items").add(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    closeForm();
+  });
+
+  // ---------- Delete confirm ----------
+  function openConfirmItem(id) {
+    pendingDeleteType = "item";
+    pendingDeleteId = id;
+    const it = items.find((i) => i.id === id);
+    $("#confirm-text").textContent = it
+      ? `¿Eliminar el artículo de "${it.transportista}" del pasillo ${it.pasillo} del listado? Esta acción no se puede deshacer.`
+      : "¿Seguro que quieres eliminarlo?";
+    $("#btn-confirm-ok").textContent = "Eliminar";
+    $("#overlay-confirm").hidden = false;
+  }
+  function openConfirmPasillo(p) {
+    pendingDeleteType = "pasillo";
+    pendingDeleteId = p;
+    $("#confirm-text").textContent = `¿Eliminar el pasillo ${p} del mapa? Esta acción no se puede deshacer.`;
+    $("#btn-confirm-ok").textContent = "Eliminar pasillo";
+    $("#overlay-confirm").hidden = false;
+  }
+  function closeConfirm() {
+    $("#overlay-confirm").hidden = true;
+    pendingDeleteId = null;
+    pendingDeleteType = "item";
+  }
+  $("#btn-confirm-cancel").addEventListener("click", closeConfirm);
+  $("#overlay-confirm").addEventListener("click", (e) => {
+    if (e.target.id === "overlay-confirm") closeConfirm();
+  });
+  $("#btn-confirm-ok").addEventListener("click", async () => {
+    if (pendingDeleteId && db) {
+      try {
+        if (pendingDeleteType === "pasillo") {
+          await removePasillo(pendingDeleteId);
+        } else {
+          await db.doc("items/" + pendingDeleteId).delete();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    closeConfirm();
+  });
+
+  // ---------- Delegated clicks ----------
+  contentEl.addEventListener("click", (e) => {
+    const statusIcon = e.target.closest("[data-status-toggle]");
+    if (statusIcon) {
+      cyclePasilloEstado(statusIcon.getAttribute("data-status-toggle"));
+      return;
+    }
+    const shelfCard = e.target.closest(".shelf-card");
+    if (shelfCard) {
+      selectedPasillo = shelfCard.getAttribute("data-pasillo");
+      render();
+      return;
+    }
+    if (e.target.closest("#btn-back")) {
+      selectedPasillo = null;
+      render();
+      return;
+    }
+    if (e.target.closest("#btn-add-here-top") || e.target.closest("#btn-add-here")) {
+      openForm(null, selectedPasillo);
+      return;
+    }
+    if (e.target.closest("#btn-add-pasillo")) {
+      addPasillo();
+      return;
+    }
+    const delPasilloBtn = e.target.closest("#btn-delete-pasillo");
+    if (delPasilloBtn) {
+      if (!delPasilloBtn.disabled) openConfirmPasillo(selectedPasillo);
+      return;
+    }
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-id");
+    if (btn.dataset.action === "edit") {
+      const it = items.find((i) => i.id === id);
+      if (it) openForm(it);
+    } else if (btn.dataset.action === "delete") {
+      openConfirmItem(id);
+    }
+  });
+
+  contentEl.addEventListener("change", (e) => {
+    if (e.target.id === "sel-pasillo-estado" && selectedPasillo) {
+      setPasilloEstado(selectedPasillo, e.target.value || null);
+    }
+  });
+
+  contentEl.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const statusIcon = e.target.closest("[data-status-toggle]");
+    if (statusIcon) {
+      e.preventDefault();
+      cyclePasilloEstado(statusIcon.getAttribute("data-status-toggle"));
+      return;
+    }
+    const shelfCard = e.target.closest(".shelf-card");
+    if (shelfCard) {
+      e.preventDefault();
+      selectedPasillo = shelfCard.getAttribute("data-pasillo");
+      render();
+    }
+  });
+
+  ["#f-buscar", "#f-estado", "#f-orden"].forEach((sel) => {
+    $(sel).addEventListener("input", render);
+    $(sel).addEventListener("change", render);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (!$("#overlay").hidden) closeForm();
+      if (!$("#overlay-confirm").hidden) closeConfirm();
+    }
+  });
+
+  // ---------- DB wiring ----------
+  async function init() {
+    populatePasilloSelects();
+    render();
+    if (!window.claude || !window.claude.use) return;
+    try {
+      db = await window.claude.use("db");
+    } catch (err) {
+      db = null;
+    }
+    if (!db) return;
+    db.collection("items").onSnapshot(
+      (snap) => {
+        items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        render();
+      },
+      (err) => {
+        console.error("db error", err);
+      }
+    );
+    db.collection("pasillo_estados").onSnapshot(
+      (snap) => {
+        const next = {};
+        snap.docs.forEach((d) => {
+          const data = d.data();
+          if (data && data.estado) next[d.id] = data.estado;
+        });
+        pasilloEstados = next;
+        render();
+      },
+      (err) => {
+        console.error("db error", err);
+      }
+    );
+    db.doc("config/pasillos").onSnapshot(
+      (snap) => {
+        const data = snap.data();
+        if (snap.exists && Array.isArray(data.list) && data.list.length) {
+          PASILLOS = data.list.map(String);
+        } else if (!snap.exists) {
+          db.doc("config/pasillos")
+            .set({ list: DEFAULT_PASILLOS, updated_at: new Date().toISOString() })
+            .catch(() => {});
+        }
+        populatePasilloSelects();
+        render();
+      },
+      (err) => {
+        console.error("db error", err);
+      }
+    );
+  }
+
+  init();
+
+  // ---------- Splash screen ----------
+  (function initSplash() {
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Buenos días" : hour < 20 ? "Buenas tardes" : "Buenas noches";
+    document.getElementById("splash-greeting").textContent = greeting;
+    document.getElementById("btn-entrar").addEventListener("click", () => {
+      document.getElementById("splash").hidden = true;
+      document.getElementById("app-wrap").hidden = false;
+    });
+  })();
+</script>
